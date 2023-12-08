@@ -1,18 +1,231 @@
-*/config/development
-*/logs/log-*.php
-!*/logs/index.html
-*/cache/*
-!system/cache/*
-!*/cache/index.html
-!*/cache/.htaccess
-
-user_guide_src/build/*
-user_guide_src/cilexer/build/*
-user_guide_src/cilexer/dist/*
-user_guide_src/cilexer/pycilexer.egg-info/*
-
-#codeigniter 3
-application/logs/*
-!application/logs/index.html
-!application/logs/.htaccess
-/vendor/
+#include <iostream>
+#include <fstream>
+#include <string>
+#include <vector>
+using namespace std;
+// Base class for Menu Items
+class MenuItem {
+public:
+ string name;
+ float price;
+ MenuItem(string n, float p) : name(std::move(n)), price(p) {}
+ virtual void display() const {
+ cout << name << " - Rs. " << price << endl;
+ }
+};
+// Derived classes for different categories of Menu Items
+class VegMenuItem : public MenuItem {
+public:
+ VegMenuItem(string n, float p) : MenuItem(std::move(n), p) {}
+ void display() const override {
+ cout << "[Veg] ";
+ MenuItem::display();
+ }
+};
+class NonVegMenuItem : public MenuItem {
+public:
+ NonVegMenuItem(string n, float p) : MenuItem(std::move(n), p) {}
+ void display() const override {
+ cout << "[Non-Veg] ";
+ MenuItem::display();
+ }
+};
+// Structure to hold customer details
+struct Customer {
+ string name;
+ string phone;
+ float points;
+ float previousBill;
+ bool visitedBefore;
+ Customer() : name(""), phone(""), points(0), previousBill(0), 
+visitedBefore(false) {}
+};
+// Function to display menu for a specific category
+void displayCategoryMenu(const vector<MenuItem*>& categoryMenu) {
+ cout << "Category Menu:\n";
+ for (size_t i = 0; i < categoryMenu.size(); ++i) {
+ cout << i + 1 << ". ";
+ categoryMenu[i]->display();
+ }
+}
+// Function to create different category menus
+vector<vector<MenuItem*>> createMenus() {
+ vector<vector<MenuItem*>> menu;
+ // Vegetarian Starters
+ vector<MenuItem*> vegStarters = {
+ new VegMenuItem("Salad", 80.0),
+ new VegMenuItem("Paneer Tikka", 120.0),
+ new VegMenuItem("Veg Manchuria", 200.0),
+ new VegMenuItem("Spring Rolls", 150.0),
+ new VegMenuItem("Veg Momos", 200.0),
+ new VegMenuItem("Spinach Cheese Rolls", 190.0),
+ new VegMenuItem("Aloo Tikka", 210.0),
+ 
+ // Add more vegetarian starters
+ };
+ menu.push_back(vegStarters);
+ // Non-Vegetarian Starters
+ vector<MenuItem*> nonVegStarters = {
+ new NonVegMenuItem("Chicken Wings", 170.0),
+ new NonVegMenuItem("Fish Fry", 180.0),
+ new NonVegMenuItem("Chilli Chicken", 200.0),
+ new NonVegMenuItem("Pepper Chicken", 190.0),
+ new NonVegMenuItem("Chilli Garlic Prawns", 210.0),
+ new NonVegMenuItem("Honey Garlic Prawns", 230.0),
+ new NonVegMenuItem("Dragon Chicken", 220.0),
+ // Add more non-vegetarian starters
+};
+ menu.push_back(nonVegStarters);
+ // Vegetarian Main Course
+ vector<MenuItem*> vegMainCourse = {
+ new VegMenuItem("Vegetable Biryani", 200.0),
+ new VegMenuItem("Palak Paneer", 160.0),
+ new VegMenuItem("Paneer Butter Masala", 250.0),
+ new VegMenuItem("Butter Naan", 50.0),
+ new VegMenuItem("Fried Rice With Manchuria", 290.0),
+ new VegMenuItem("Hakka Noodles", 240.0),
+ new VegMenuItem("Kaju Panner", 250.0),
+ // Add more vegetarian main courses
+ };
+ menu.push_back(vegMainCourse);
+ // Non-Vegetarian Main Course
+ vector<MenuItem*> nonVegMainCourse = {
+ new NonVegMenuItem("Chicken Curry", 220.0),
+ new NonVegMenuItem("Mutton Rogan Josh", 250.0),
+ new NonVegMenuItem("Chicken Fry Biryani", 350.0),
+ new NonVegMenuItem("Mutton Dum Biryani", 500.0),
+ new NonVegMenuItem("Butter Chicken", 300.0),
+ new NonVegMenuItem("Prawns Biryani",450.0),
+ new NonVegMenuItem("Chicken Fried Rice", 300.0),
+ // Add more non-vegetarian main courses
+ };
+menu.push_back(nonVegMainCourse);
+ // Desserts
+ vector<MenuItem*> desserts = {
+ new MenuItem("Gulab Jamun", 100.0),
+ new MenuItem("Ice Cream Sundae", 120.0),
+ new MenuItem("Chocolate Sizzler", 180.0),
+ new MenuItem("Cheesecakes", 150.0),
+ new MenuItem("Roasted Strawberry Crumble", 250.0),
+ new MenuItem("Chocolate brownie", 200.0),
+ new MenuItem("Tiramisu", 190.0),
+ // Add more dessert options
+ };
+ menu.push_back(desserts);
+ return menu;
+}
+// Function to display the entire menu
+void displayMenu(const vector<vector<MenuItem*>>& menu) {
+ cout << "Welcome to cafe dè cöstá!\n";
+ for (size_t i = 0; i < menu.size(); ++i) {
+ cout << "Category " << i + 1 << ":\n";
+ displayCategoryMenu(menu[i]);
+ }
+}
+// Function to take orders
+float takeOrders(vector<vector<MenuItem*>>& menu) {
+float totalBill = 0;
+ int category, order;
+ do {
+ cout << "Enter the category number you want to order from (0 to finish ordering): ";
+ cin >> category;
+ if (category >= 1 && category <= menu.size()) {
+ displayCategoryMenu(menu[category - 1]);
+ cout << "Enter the item number you want to order (0 to finish ordering from this category): ";
+ cin >> order;
+ while (order != 0 && (order < 1 || order > menu[category - 1].size())) {
+ cout << "Invalid item number! Enter again (0 to finish ordering from this category): ";
+ cin >> order;
+ }
+ if (order != 0) {
+ totalBill += menu[category - 1][order - 1]->price;
+ cout << "Added " << menu[category - 1][order - 1]->name << " to your order." << endl;
+ }
+ } else if (category != 0) {
+ cout << "Invalid category number!" << endl;
+ }
+ } 
+ while (category != 0);
+ return totalBill;
+}
+// Function to get customer details
+Customer getCustomerDetails() {
+ Customer customer;
+ cout << "Enter your name: ";
+ cin >> customer.name;
+ do {
+ cout << "Enter your 10-digit phone number: ";
+ cin >> customer.phone;
+ if (customer.phone.length() != 10) {
+ cout << "Invalid phone number. Please enter a 10-digit number." << endl;
+ }
+ } while (customer.phone.length() != 10);
+ return customer;
+}
+// Function to handle payment using loyalty points
+void handlePayment(float& totalBill, Customer& customer) {
+ if (customer.visitedBefore) {
+ float pointsToUse;
+ cout << "You have " << customer.points << " points. You can use your points when you visit next time." << endl;
+ cout << "Enter points to use for payment: ";
+ cin >> pointsToUse;
+ if (pointsToUse > customer.points) {
+ cout << "Invalid points entered. Paying without using points." << endl;
+ } else {
+ totalBill -= pointsToUse;
+customer.points -= pointsToUse;
+ cout << "Your bill after using points is Rs. " << totalBill << endl;
+ }
+ }
+ // Updating customer's previous bill
+ customer.previousBill = totalBill;
+}
+// Function to handle file operations for customer details
+void handleFileOperations(const Customer& customer) {
+ ofstream customerFile("customer_details.txt", ios::app);
+ if (customerFile.is_open()) {
+ customerFile << "Name: " << customer.name << ", Phone: " << customer.phone << ", Previous Bill: " << customer.previousBill << ", Points: " << customer.points << "\n";
+customerFile.close();
+ } else {
+ cout << "Unable to open file!" << endl;
+ }
+}
+int main() {
+ // Create menu
+ vector<vector<MenuItem*>> menu = createMenus();
+ // Display menu
+ displayMenu(menu);
+ // Order taking
+ float totalBill = takeOrders(menu);
+// Customer details input
+ Customer customer = getCustomerDetails();
+ // Checking if customer has visited before
+ if (!customer.visitedBefore) {
+ cout << "Welcome, " << customer.name << "! You visited for the first time." << endl;
+ totalBill *= 0.8; // 20% discount for first-time visitors
+ cout << "You've received a 20% discount! Your final bill is Rs. " << totalBill << endl;
+ customer.visitedBefore = true;
+ // Calculate points for first-time visitors
+ customer.points = totalBill / 100;
+ cout << "You earned " << customer.points << " points." << endl;
+ } else {
+ cout << "Welcome back, " << customer.name << "!" << endl;
+ float pointsEarned = totalBill / 100;
+ customer.points += pointsEarned;
+ cout << "You earned " << pointsEarned << " points"<<endl;
+ cout<<" You can use them in the next visit." << endl;
+ // Handling payment using points
+ handlePayment(totalBill, customer);
+ }
+ // File handling for customer details
+ handleFileOperations(customer);
+ // Deallocate memory for menu items
+ for (auto& category : menu) {
+for (auto& item : category) {
+ delete item;
+ }
+ }
+ // Thank you message
+ cout << "Thank you for your visit! We hope to see you again soon." << endl;
+ return 0;
+}
